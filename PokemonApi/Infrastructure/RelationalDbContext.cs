@@ -24,6 +24,7 @@ namespace PokemonApi.Infrastructure
                 entity.Property(e => e.Attack).IsRequired();
                 entity.Property(e => e.Defense).IsRequired();
                 entity.Property(e => e.Speed).IsRequired();
+                entity.Property(e => e.Weight).IsRequired();
             });
         }
     }
