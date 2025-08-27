@@ -14,5 +14,8 @@ namespace PokemonApi.Dtos
 
         [DataMember(Name = "Speed", Order = 3)]
         public int Speed { get; set; }
+
+        [DataMember(Name = "Weight", Order = 4)]
+        public int Weight { get; set; }
     }
 }
