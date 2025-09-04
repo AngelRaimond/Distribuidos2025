@@ -1,0 +1,6 @@
+@PlantApi_HostAddress = http://localhost:5081
+
+GET {{PlantApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
