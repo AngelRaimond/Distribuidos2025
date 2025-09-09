@@ -9,6 +9,9 @@ public interface IPlantRepository
 
     Task<Plant?> GetPlantByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    
+    Task<Plant?> GetPlantsByFamilyAsync(string family, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<Plant>> GetPlantsByNameAsync(string name, CancellationToken cancellationToken);
 
     Task DeletePlantAsync(Plant plant, CancellationToken cancellationToken);

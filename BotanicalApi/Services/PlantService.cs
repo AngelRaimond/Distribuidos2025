@@ -74,9 +74,16 @@ public class PlantService : IPlantService
         return PlantExists(plant) ? plant.ToResponseDto() : throw new FaultException("Plant not found");
 
     }
+    
+    public async Task<PlantResponseDto> GetPlantByFamily(string family, CancellationToken cancellationToken)
+    {
+        var plant = await _plantRepository.GetPlantsByFamilyAsync(family, cancellationToken);
+        return PlantExists(plant) ? plant.ToResponseDto() : throw new FaultException("Plant not found");
+
+    }
     public async Task<PlantResponseDto> CreatePlant(CreatePlantDto plantRequest, CancellationToken cancellationToken)
     {
-     
+
         plantRequest
             .ValidateName()
             .ValidateScientificName()
