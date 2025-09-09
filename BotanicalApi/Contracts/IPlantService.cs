@@ -13,6 +13,9 @@ public interface IPlantService
     Task<PlantResponseDto> GetPlantById(Guid id, CancellationToken cancellationToken);
 
     [OperationContract]
+    Task<PlantResponseDto> GetPlantByFamily(string family, CancellationToken cancellationToken);
+
+    [OperationContract]
     Task<IList<PlantResponseDto>> GetPlantByName(string name, CancellationToken cancellationToken);
 
     [OperationContract]

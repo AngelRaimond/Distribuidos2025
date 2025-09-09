@@ -40,6 +40,12 @@ public class PlantRepository : IPlantRepository
         return plant?.ToModel();
     }
 
+    public async Task<Plant?> GetPlantsByFamilyAsync(string family, CancellationToken cancellationToken)
+    {
+        var plant = await _context.Plants.AsNoTracking().FirstOrDefaultAsync(s => s.Family.Contains(family), cancellationToken);
+        return plant?.ToModel();
+    }
+
     public async Task<Plant> GetByNameAsync(string name, CancellationToken cancellationToken)
     {
         var plant = await _context.Plants.AsNoTracking().FirstOrDefaultAsync(s => s.Name.Contains(name));
