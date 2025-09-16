@@ -1,8 +1,9 @@
 using System.Runtime.Serialization;
 
-namespace PokemonApi.Dtos;
+namespace PokedexApi.Infrastructure.Soap.Contracts;
 
 [DataContract(Name = "DeletePokemonResponseDto", Namespace = "http://pokemon-api/pokemon-dto")]
+
 public class DeletePokemonResponseDto
 {
     [DataMember(Name = "Success", Order = 1)]

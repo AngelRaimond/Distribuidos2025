@@ -1,5 +1,5 @@
 using System.Runtime.Serialization;
-namespace PokemonApi.Dtos;
+namespace PokedexApi.Infrastructure.Soap.Contracts;
 
 [DataContract(Name = "PokemonResponseDto", Namespace = "http://pokemon-api/pokemon-service")]
 public class PokemonResponseDto
@@ -18,4 +18,5 @@ public class PokemonResponseDto
 
     [DataMember(Name = "Stats", Order = 5)]
     public required StatsDto Stats { get; set; }
+
 }

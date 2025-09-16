@@ -15,7 +15,7 @@ public static class PokemonValidator
     string.IsNullOrEmpty(pokemon.Type)
         ? throw new FaultException("Pokemon type is required")
         : pokemon;
-
+        
     public static CreatePokemonDto ValidateLevel(this CreatePokemonDto pokemon) =>
     pokemon.Level <= 0
         ? throw new FaultException("Pokemon level must be greater than 0")
