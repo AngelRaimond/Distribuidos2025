@@ -1,0 +1,19 @@
+development:
+  adapter: mysql2
+  host: instrumentos-db
+  port: 3306
+  username: root
+  password: a
+  database: instrumentos_development
+  encoding: utf8mb4
+  ssl_mode: disabled
+
+production:
+  adapter: mysql2
+  host: instrumentos-db
+  port: 3306
+  username: root
+  password: a
+  database: instrumentos_production
+  encoding: utf8mb4
+  ssl_mode: disabled
