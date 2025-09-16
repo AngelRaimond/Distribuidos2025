@@ -1,6 +1,10 @@
 @PokedexApi_HostAddress = http://localhost:5108
 
-GET {{PokedexApi_HostAddress}}/weatherforecast/
+GET {{PokedexApi_HostAddress}}/api/v1/Pokemnons/2e2e7bf4-1a19-49aa-9400-182ef651f00d
 Accept: application/json
 
+
+
+GET {{PokedexApi_HostAddress}}/api/v1/Pokemnons/2e2e7bf4-1a19-49aa-9400-182ef651f01d
+Accept: application/json
 ###
