@@ -24,9 +24,12 @@ namespace PokemonApi.Migrations
                     Type = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Level = table.Column<int>(type: "int", nullable: false),
-                    Attack = table.Column<int>(type: "int", nullable: false),
-                    Defense = table.Column<int>(type: "int", nullable: false),
-                    Speed = table.Column<int>(type: "int", nullable: false)
+                    Attack = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Defense = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Speed = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {

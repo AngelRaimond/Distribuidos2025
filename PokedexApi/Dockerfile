@@ -7,17 +7,17 @@ USER app
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG configuration=Release
 WORKDIR /src
-COPY ["PokemonApi.csproj", "./"]
-RUN dotnet restore "PokemonApi.csproj"
+COPY ["PokedexApi.csproj", "./"]
+RUN dotnet restore "PokedexApi.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "PokemonApi.csproj" -c ${configuration} -o /app/build
+RUN dotnet build "PokedexApi.csproj" -c ${configuration} -o /app/build
 
 FROM build AS publish
 ARG configuration=Release
-RUN dotnet publish "PokemonApi.csproj" -c ${configuration} -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "PokedexApi.csproj" -c ${configuration} -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PokemonApi.dll"]
+ENTRYPOINT ["dotnet", "PokedexApi.dll"]

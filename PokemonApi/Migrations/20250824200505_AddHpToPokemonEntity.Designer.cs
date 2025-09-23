@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokemonApi.Infrastructure;
 
@@ -11,9 +12,11 @@ using PokemonApi.Infrastructure;
 namespace PokemonApi.Migrations
 {
     [DbContext(typeof(RelationalDbContext))]
-    partial class RelationalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250824200505_AddHpToPokemonEntity")]
+    partial class AddHpToPokemonEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,11 +31,13 @@ namespace PokemonApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<int>("Attack")
-                        .HasColumnType("int");
+                    b.Property<string>("Attack")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.Property<int>("Defense")
-                        .HasColumnType("int");
+                    b.Property<string>("Defense")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Hp")
                         .HasColumnType("int");
@@ -45,8 +50,9 @@ namespace PokemonApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<int>("Speed")
-                        .HasColumnType("int");
+                    b.Property<string>("Speed")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Type")
                         .IsRequired()

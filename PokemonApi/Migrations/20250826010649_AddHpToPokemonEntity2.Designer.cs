@@ -12,8 +12,8 @@ using PokemonApi.Infrastructure;
 namespace PokemonApi.Migrations
 {
     [DbContext(typeof(RelationalDbContext))]
-    [Migration("20250822020003_InitialSetup")]
-    partial class InitialSetup
+    [Migration("20250826010649_AddHpToPokemonEntity2")]
+    partial class AddHpToPokemonEntity2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,10 +31,15 @@ namespace PokemonApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<int>("Attack")
-                        .HasColumnType("int");
+                    b.Property<string>("Attack")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.Property<int>("Defense")
+                    b.Property<string>("Defense")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Hp")
                         .HasColumnType("int");
 
                     b.Property<int>("Level")
@@ -45,8 +50,9 @@ namespace PokemonApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<int>("Speed")
-                        .HasColumnType("int");
+                    b.Property<string>("Speed")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Type")
                         .IsRequired()
