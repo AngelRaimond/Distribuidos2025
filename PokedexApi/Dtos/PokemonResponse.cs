@@ -6,4 +6,6 @@ public class PokemonResponse
     public string Name { get; set; }
 
     public int Attack { get; set; }
+
+    public string Type { get; set; }
 }

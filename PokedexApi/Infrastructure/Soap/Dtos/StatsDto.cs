@@ -16,6 +16,6 @@ public class StatsDto
     [DataMember(Name = "Speed", Order = 3)]
     public int Speed { get; set; }
 
-    [DataMember(Name = "Weight", Order = 4)]
-    public int Weight { get; set; }
+    [DataMember(Name = "Health", Order = 4)]
+    public int Health { get; set; }
 }

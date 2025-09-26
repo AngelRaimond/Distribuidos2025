@@ -1,10 +1,6 @@
-@PokedexApi_HostAddress = http://localhost:5108
+@PokedexApi_HostAddress = http://localhost:5243
 
-GET {{PokedexApi_HostAddress}}/api/v1/Pokemnons/2e2e7bf4-1a19-49aa-9400-182ef651f00d
+GET {{PokedexApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
-
-
-GET {{PokedexApi_HostAddress}}/api/v1/Pokemnons/2e2e7bf4-1a19-49aa-9400-182ef651f01d
-Accept: application/json
 ###
