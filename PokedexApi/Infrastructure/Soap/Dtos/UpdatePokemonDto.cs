@@ -1,12 +1,10 @@
 using System.Runtime.Serialization;
 
-namespace PokedexApi.Infrastructure.Soap.Contracts;
+namespace PokedexApi.Infrastructure.Soap.Dtos;
 
-[DataContract(Name = "UpdatePokemonDto", Namespace = "http://pokemon-api/pokemon-dto")]
-
+[DataContract(Name = "UpdatePokemonDto", Namespace = "http://pokemon-api/pokemon-service")]
 public class UpdatePokemonDto
 {
-
     [DataMember(Name = "Id", Order = 1)]
     public Guid Id { get; set; }
 
@@ -15,10 +13,7 @@ public class UpdatePokemonDto
 
     [DataMember(Name = "Type", Order = 3)]
     public string Type { get; set; }
-    
-        [DataMember(Name = "Stats", Order = 4)]
+
+    [DataMember(Name = "Stats", Order = 4)]
     public StatsDto Stats { get; set; }
-
-
-
 }

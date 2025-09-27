@@ -1,8 +1,9 @@
 using System.ServiceModel;
 using PokedexApi.Models;
-using PokedexApi.Infrastructure.Soap.Contracts;
 using PokedexApi.Mappers;
-using PokedexApi.Exceptions;
+using PokedexApi.Infrastructure.Soap.Contracts;
+using PokedexApi.Expections;
+
 
 namespace PokedexApi.Gateways;
 
@@ -10,12 +11,26 @@ public class PokemonGateway : IPokemonGateway
 {
     private readonly IPokemonContract _pokemonContract;
     private readonly ILogger<PokemonGateway> _logger;
+
     public PokemonGateway(IConfiguration configuration, ILogger<PokemonGateway> logger)
     {
         var binding = new BasicHttpBinding();
-        var endpoint = new EndpointAddress(configuration.GetValue<string>("PokemonService:Url"));
-        _pokemonContract = new ChannelFactory<IPokemonContract>(binding, endpoint).CreateChannel();
+        var endopoint = new EndpointAddress(configuration.GetValue<string>("PokemonService:Url"));
+        _pokemonContract = new ChannelFactory<IPokemonContract>(binding, endopoint).CreateChannel();
         _logger = logger;
+    }
+
+    public async Task DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _pokemonContract.DeletePokemon(id, cancellationToken);
+        }
+        catch (FaultException ex) when (ex.Message == "Pokemon not found")
+        {
+            _logger.LogWarning(ex, "Pokemon not found");
+            throw new PokemonNotFoundException(id);    
+        }
     }
 
     public async Task<Pokemon> GetPokemonByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -25,28 +40,16 @@ public class PokemonGateway : IPokemonGateway
             var pokemon = await _pokemonContract.GetPokemonById(id, cancellationToken);
             return pokemon.ToModel();
         }
-        catch (FaultException ex) when (ex.Message == "Pokemon doesn't exist")
-        {
-            return null;
-        }
-    }
-
-    public async Task DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _pokemonContract.DeletePokemonAsync(id, cancellationToken);
-        }
         catch (FaultException ex) when (ex.Message == "Pokemon not found")
         {
-            _logger.LogWarning(ex, "Pokemon not found");
-            throw new PokemonNotFoundException(id);
+            _logger.LogWarning(ex, "Pokemon Not Found");
+            return null;
         }
     }
 
     public async Task<IList<Pokemon>> GetPokemonsByNameAsync(string name, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(":()");
+        _logger.LogDebug(":(");
         var pokemons = await _pokemonContract.GetPokemonsByName(name, cancellationToken);
         return pokemons.ToModel();
     }
@@ -55,15 +58,14 @@ public class PokemonGateway : IPokemonGateway
     {
         try
         {
-            _logger.LogInformation("Sending request to SOAP API, with name: {Name}", pokemon.Name);
+            _logger.LogInformation("Sending request to SOAP API, with pokemon: {name}", pokemon.Name);
             var createdPokemon = await _pokemonContract.CreatePokemon(pokemon.ToRequest(), cancellationToken);
             return createdPokemon.ToModel();
         }
-
-        catch (Exception ex) when (ex.Message.Contains("Pokemon Already Exists"))
+        catch (Exception e)
         {
-            _logger.LogError(ex, "Something wrong in create pokemon soap api");
-            throw new Exception("Pokemon Already Exists");
+            _logger.LogError(e, "Algo trono en el create pokemon a soap");
+            throw;
         }
     }
 }
