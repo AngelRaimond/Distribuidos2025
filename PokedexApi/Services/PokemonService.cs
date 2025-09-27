@@ -1,8 +1,9 @@
+using PokedexApi.Expections;
 using PokedexApi.Gateways;
 using PokedexApi.Models;
-using PokedexApi.Exceptions;
 
 namespace PokedexApi.Services;
+
 
 public class PokemonService : IPokemonService
 {
@@ -12,16 +13,17 @@ public class PokemonService : IPokemonService
     {
         _pokemonGateway = pokemonGateway;
     }
+
+    public async Task DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
+    {
+        await _pokemonGateway.DeletePokemonAsync(id, cancellationToken);
+    }
+    
     public async Task<Pokemon> GetPokemonByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _pokemonGateway.GetPokemonByIdAsync(id, cancellationToken);
     }
 
-    public async Task<IList<Pokemon>> GetPokemonsAsync(string name, string type, CancellationToken cancellationToken)
-    {
-        var pokemons = await _pokemonGateway.GetPokemonsByNameAsync(name, cancellationToken);
-        return pokemons.Where(s => s.Type.ToLower().Contains(type.ToLower())).ToList();
-    }
     public async Task<Pokemon> CreatePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken)
     {
         var pokemons = await _pokemonGateway.GetPokemonsByNameAsync(pokemon.Name, cancellationToken);
@@ -29,17 +31,18 @@ public class PokemonService : IPokemonService
         {
             throw new PokemonAlreadyExistsException(pokemon.Name);
         }
+
         return await _pokemonGateway.CreatePokemonAsync(pokemon, cancellationToken);
     }
 
-    public async Task DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
+    private static bool PokemonExists(IList<Pokemon> pokemons, string pokemonNameToSearch)
     {
-        await _pokemonGateway.DeletePokemonAsync(id, cancellationToken);
-    }
-    
-    public static bool PokemonExists(IList<Pokemon> pokemons, string pokemonNameToSearch)
-    {
-        return pokemons.Any(p => p.Name.ToLower().Equals(pokemonNameToSearch.ToLower()));
+        return pokemons.Any(s => s.Name.ToLower().Equals(pokemonNameToSearch.ToLower()));
     }
 
+    public async Task<IList<Pokemon>> GetPokemonsAsync(string name, string type, CancellationToken cancellationToken)
+    {
+        var pokemons = await _pokemonGateway.GetPokemonsByNameAsync(name, cancellationToken);
+        return pokemons.Where(s => s.Type.ToLower().Contains(type.ToLower())).ToList();
+    }
 }

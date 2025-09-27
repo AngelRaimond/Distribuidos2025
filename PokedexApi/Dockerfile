@@ -1,10 +1,5 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 8080
-
-
-ENV ASPNETCORE_URL=http://+:8080
-ENV MINOMBRE_ES=Areli
 
 USER app
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
@@ -16,11 +11,11 @@ COPY . .
 WORKDIR "/src/."
 RUN dotnet build "PokedexApi.csproj" -c ${configuration} -o /app/build
 
-RUN ls
+
 
 FROM build AS publish
 ARG configuration=Realese
-RUN dotnet publish "PokedexApi.csproj" -c ${configuration} -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "PokedexApi.csproj" -c ${configuration} -o /app/publish
 
 FROM base AS final
 WORKDIR /app
