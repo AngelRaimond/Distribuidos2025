@@ -1,18 +1,22 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
-USER app
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+ENV ASPNETCORE_URL=http://+:8080
+ENV MINOMBRE_ES=Areli
+
+USER app
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG configuration=Release
 WORKDIR /src
-COPY ["PokedexApi.csproj", "./"]
+COPY ["PokedexApi.csproj","./"]
 RUN dotnet restore "PokedexApi.csproj"
 COPY . .
-RUN ls -la
 WORKDIR "/src/."
 RUN dotnet build "PokedexApi.csproj" -c ${configuration} -o /app/build
+
+RUN ls
 
 FROM build AS publish
 ARG configuration=Realese
