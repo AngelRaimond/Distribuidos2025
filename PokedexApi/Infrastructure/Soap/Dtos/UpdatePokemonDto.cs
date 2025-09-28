@@ -13,7 +13,9 @@ public class UpdatePokemonDto
 
     [DataMember(Name = "Type", Order = 3)]
     public string Type { get; set; }
+    [DataMember(Name = "Level", Order = 4)]
+    public int Level { get; set; }
 
-    [DataMember(Name = "Stats", Order = 4)]
+    [DataMember(Name = "Stats", Order = 5)]
     public StatsDto Stats { get; set; }
 }
