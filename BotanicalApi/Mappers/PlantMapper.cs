@@ -1,93 +1,85 @@
+using System;
+using System.ServiceModel;
 using PlantApi.Models;
-using PlantApi.Infrastructure;
-using PlantApi.Dtos;
-using PlantApi.Infrastructure.Entities;
+     
 
 
-namespace PlantApi.Mappers;
-
-public static class PlantMapper
+namespace PlantApi.Services     // <-- IMPORTANTE: mismo namespace que usa PlantService y sus DTOs
 {
-    //Extension method
-    public static Plant ToModel(this PlantEntity plantEntity)
+    // Se asume que CreatePlantDto y UpdatePlantDto están en PlantApi.Services
+    // con estas formas mínimas (propiedades que usa el mapper).
+    // Si ya existen en tu código, NO necesitas declarar nada extra aquí.
+
+    public static class PlantMapper
     {
-        if (plantEntity is null)
+        /// <summary>
+        /// Mapea CreatePlantDto -> Plant tolerando dto.Data == null.
+        /// </summary>
+        public static Plant ToModel(CreatePlantDto dto)
         {
-            return null;
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            var name = (dto.Name ?? string.Empty).Trim();
+            var sci  = (dto.ScientificName ?? string.Empty).Trim();
+            var fam  = (dto.Family ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new FaultException("Name is required");
+            if (string.IsNullOrWhiteSpace(sci))
+                throw new FaultException("ScientificName is required");
+            if (string.IsNullOrWhiteSpace(fam))
+                throw new FaultException("Family is required");
+
+            // Tolerar Data == null y/o campos planos en el dto
+            var maxHeight         = dto.Data?.MaxHeight         ?? dto.MaxHeight         ?? 0;
+            var maxAge            = dto.Data?.MaxAge            ?? dto.MaxAge            ?? 0;
+            var conservationLevel = dto.Data?.ConservationLevel ?? dto.ConservationLevel ?? 0;
+
+            return new Plant
+            {
+                Id                = Guid.NewGuid().ToString(), // varchar(36)
+                Name              = name,
+                ScientificName    = sci,
+                Family            = fam,
+                MaxHeight         = maxHeight,
+                MaxAge            = maxAge,
+                ConservationLevel = conservationLevel
+            };
         }
 
-        return new Plant
+        /// <summary>
+        /// Aplica UpdatePlantDto a una entidad existente, tolerando dto.Data == null.
+        /// </summary>
+        public static void ApplyUpdate(UpdatePlantDto dto, Plant entity)
         {
-            Id = plantEntity.Id,
-            Name = plantEntity.Name,
-            ScientificName = plantEntity.ScientificName,
-            Family = plantEntity.Family,
-            Data = new Data
-            {
-                MaxHeight = plantEntity.MaxHeight,
-                MaxAge = plantEntity.MaxAge,
-                ConservationLevel = plantEntity.ConservationLevel
-            }
-        };
-    }
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
 
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                entity.Name = dto.Name.Trim();
 
-    public static PlantEntity ToEntity(this Plant plant)
-    {
-        return new PlantEntity
-        {
-            Id = plant.Id,
-            Name = plant.Name,
-            ScientificName = plant.ScientificName,
-            Family = plant.Family,
-            MaxHeight = plant.Data.MaxHeight,
-            MaxAge = plant.Data.MaxAge,
-            ConservationLevel = plant.Data.ConservationLevel
-        };
-    }
+            if (!string.IsNullOrWhiteSpace(dto.ScientificName))
+                entity.ScientificName = dto.ScientificName.Trim();
 
-    public static Plant ToModel(this CreatePlantDto requestPlantDto)
-    {
-        return new Plant
-        {
-            Name = requestPlantDto.Name,
-            ScientificName = requestPlantDto.ScientificName,
-            Family = requestPlantDto.Family,
-            Data = new Data
-            {
-                MaxHeight = requestPlantDto.Data.MaxHeight,
-                MaxAge = requestPlantDto.Data.MaxAge,
-                ConservationLevel = requestPlantDto.Data.ConservationLevel
-            }
-        };
-    }
+            if (!string.IsNullOrWhiteSpace(dto.Family))
+                entity.Family = dto.Family.Trim();
 
-    public static PlantResponseDto ToResponseDto(this Plant plant)
-    {
-        return new PlantResponseDto
-        {
-            Id = plant.Id,
-            Name = plant.Name,
-            ScientificName = plant.ScientificName,
-            Family = plant.Family,
-            Data = new DataDto
-            {
-                MaxHeight = plant.Data.MaxHeight,
-                MaxAge = plant.Data.MaxAge,
-                ConservationLevel = plant.Data.ConservationLevel
-            }
+            var hasData = dto.Data != null;
 
-        };
-    }
+            if (hasData && dto.Data.MaxHeight.HasValue)
+                entity.MaxHeight = dto.Data.MaxHeight.Value;
+            else if (dto.MaxHeight.HasValue)
+                entity.MaxHeight = dto.MaxHeight.Value;
 
-    public static IList<PlantResponseDto> ToResponseDto(this IReadOnlyList<Plant> plants)
-    {
-        return plants.Select(s => s.ToResponseDto()).ToList();
-    }
+            if (hasData && dto.Data.MaxAge.HasValue)
+                entity.MaxAge = dto.Data.MaxAge.Value;
+            else if (dto.MaxAge.HasValue)
+                entity.MaxAge = dto.MaxAge.Value;
 
-    public static IReadOnlyList<Plant> ToModel(this IReadOnlyList<PlantEntity> plants)
-    {
-        return plants.Select(s => s.ToModel()).ToList();
+            if (hasData && dto.Data.ConservationLevel.HasValue)
+                entity.ConservationLevel = dto.Data.ConservationLevel.Value;
+            else if (dto.ConservationLevel.HasValue)
+                entity.ConservationLevel = dto.ConservationLevel.Value;
+        }
     }
 }
-
