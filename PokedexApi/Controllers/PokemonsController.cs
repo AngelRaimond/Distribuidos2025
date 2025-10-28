@@ -3,10 +3,11 @@ using PokedexApi.Dtos;
 using PokedexApi.Expections;
 using PokedexApi.Mappers;
 using PokedexApi.Services;
-
+using Microsoft.AspNetCore.Authorization;
 namespace PokedexApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/v1/[controller]")]
 public class PokemonsController : ControllerBase // Nos va a dar status code verbos HTTP etc.
 {
@@ -18,7 +19,8 @@ public class PokemonsController : ControllerBase // Nos va a dar status code ver
     }
 
     // localhost:PORT/api/v1/pokemons/ID(<- Es el ID del recurso)
-    [HttpGet("{id}", Name = "GetPokemonByIdAsync")] // Es un endopoint del controlador y escucha un metodo Get, {id} es el recurso que va a viajar en la peticion
+    [HttpGet("{id}", Name = "GetPokemonByIdAsync")] 
+    [Authorize(Policy = "Read")]
     public async Task<ActionResult<PokemonResponse>> GetPokemonByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var pokemon = await _pokemonService.GetPokemonByIdAsync(id, cancellationToken);
@@ -33,6 +35,7 @@ public class PokemonsController : ControllerBase // Nos va a dar status code ver
     // 200 - OK (si existe o no pokemon(si no hay nada se regresa vacio)) 
     // 400 - BadRequest (Si alguno de los quert parameter son incorrectos)
     [HttpGet]
+    [Authorize(Policy = "Read")]
     public async Task<ActionResult<IList<PokemonResponse>>> GetPokemonsAsync([FromQuery] string name, [FromQuery] string type, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(type))
@@ -56,6 +59,7 @@ public class PokemonsController : ControllerBase // Nos va a dar status code ver
     // 201 - Created (Recurso creado + id) -- Response header retorna un href donde referencia al GET para obtener el recurso
     // 202 - Accepted (Procesamiento async)
     [HttpPost]
+    [Authorize(Policy = "Write")]
     public async Task<ActionResult<PokemonResponse>> CreatePokemonAsync([FromBody] CreatePokemonRequest createPokemon, CancellationToken cancellationToken)
     {
         try
@@ -88,6 +92,7 @@ public class PokemonsController : ControllerBase // Nos va a dar status code ver
     // 500 - Internal server error
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "Write")]
     public async Task<ActionResult> DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
     {
         try
