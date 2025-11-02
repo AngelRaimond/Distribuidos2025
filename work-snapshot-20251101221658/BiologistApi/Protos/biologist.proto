@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package biologistpb;
+
+option csharp_namespace = "BiologistApi";
+
+import "google/protobuf/timestamp.proto";
+
+message Area {
+    string area = 1;
+    SubArea sub_area = 2;
+}
+
+enum SubArea {
+    UNASSIGNED = 0;
+    MORFOLOGY = 1;
+    CITOLOGY = 2;
+    MOLECULAR = 3;
+}
+
+message BiologistByIdRequest {
+    string id = 1;
+}
+
+message BiologistsByNameRequest {
+    string name = 1;
+}
+
+message CreateBiologistRequest {
+    string name = 1;
+    int32 age = 2;
+    google.protobuf.Timestamp birth_date = 3;
+    repeated Area areas = 4;
+}
+
+message BiologistResponse {
+    string id = 1;
+    string name = 2;
+    int32 age = 3;
+    google.protobuf.Timestamp birth_date = 4;
+    repeated Area areas = 5;
+}
+
+message CreateBiologistResponse {
+    int32 success_count = 1;
+    repeated BiologistResponse biologists = 2;
+}
+
+service BiologistService {
+    rpc GetBiologistById (BiologistByIdRequest) returns (BiologistResponse);
+    rpc GetAllBiologistsByName (BiologistsByNameRequest) returns (stream BiologistResponse);
+    rpc CreateBiologist (stream CreateBiologistRequest) returns (CreateBiologistResponse);
+}
