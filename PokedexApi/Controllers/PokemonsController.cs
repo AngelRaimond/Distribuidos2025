@@ -3,13 +3,11 @@ using PokedexApi.Dtos;
 using PokedexApi.Expections;
 using PokedexApi.Mappers;
 using PokedexApi.Services;
-using PokedexApi.Shared.Dto;
-using PokedexApi.Models;
-using System.Linq;
-
+using Microsoft.AspNetCore.Authorization;
 namespace PokedexApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/v1/[controller]")]
 public class PokemonsController : ControllerBase
 {
@@ -20,7 +18,9 @@ public class PokemonsController : ControllerBase
         _pokemonService = pokemonsService;
     }
 
-    [HttpGet("{id}", Name = "GetPokemonByIdAsync")]
+    // localhost:PORT/api/v1/pokemons/ID(<- Es el ID del recurso)
+    [HttpGet("{id}", Name = "GetPokemonByIdAsync")] 
+    [Authorize(Policy = "Read")]
     public async Task<ActionResult<PokemonResponse>> GetPokemonByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
@@ -35,14 +35,8 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<PagedResponse<PokemonResponse>>> Get(
-        [FromQuery] string? name,
-        [FromQuery] string? type,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] string orderBy = "name",
-        [FromQuery] string orderDirection = "asc",
-        CancellationToken cancellationToken = default)
+    [Authorize(Policy = "Read")]
+    public async Task<ActionResult<IList<PokemonResponse>>> GetPokemonsAsync([FromQuery] string name, [FromQuery] string type, CancellationToken cancellationToken)
     {
         if (pageNumber < 1) return BadRequest(new { Message = "pageNumber must be >= 1" });
         if (pageSize < 1 || pageSize > 200) return BadRequest(new { Message = "pageSize must be between 1 and 200" });
@@ -81,7 +75,8 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<PokemonResponse>> Create([FromBody] CreatePokemonRequest createPokemon, CancellationToken cancellationToken)
+    [Authorize(Policy = "Write")]
+    public async Task<ActionResult<PokemonResponse>> CreatePokemonAsync([FromBody] CreatePokemonRequest createPokemon, CancellationToken cancellationToken)
     {
         if (!IsValidAttack(createPokemon)) return BadRequest();
 
@@ -104,7 +99,8 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    [Authorize(Policy = "Write")]
+    public async Task<ActionResult> DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
