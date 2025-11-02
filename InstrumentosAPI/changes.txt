@@ -1,0 +1,17 @@
+InstrumentosAPI (SOAP)
+- Stack: Ruby (Sinatra) + Sequel; estructura en `app/{soap,services,repositories,mappers,validators}`.
+- Cambios relevantes:
+  - `app/soap`: endpoints SOAP que devuelven XML con orden y etiquetas normalizadas.
+  - `app/mappers` y `app/validators`: normalizan/validan campos (nombre, marca, modelo, precio, anio, categoria) y garantizan tipos/formato antes de persistir.
+  - `config/*`, `Dockerfile`, `db/migrate`: añadidos/ajustados para ejecución reproducible y compatibilidad de despliegue.
+
+MusicShopApi (gateway REST)
+- Stack: Node + TypeScript (Express). Implementa HATEOAS, paginación, cache y auth.
+- Puntos técnicos clave:
+  - `src/lib/soap.ts` usa parsing por expresiones regulares y depende de un XML con tags en orden y valores formateados (números con punto, etiquetas presentes).
+  - `src/routes/instruments.ts` asume respuestas consistentes y mapea faults SOAP a códigos HTTP.
+
+Por qué se modificó InstrumentosAPI
+- La api no estaba pensada para ser consumida por un gateway REST, se tenian que modificar muchas cosas 
+- El gateway REST necesita un contrato XML determinista, por lo tanto se estabilizó la salida SOAP (orden, escape, etiquetas) y se añadieron validaciones para evitar casos ambiguos que romperían el parser (campos faltantes, formatos numéricos, etiquetas en distinto orden).
+- Sin estas modificaciones el gateway no funcionaba (parsing regex fallido, errores no mapeables, duplicados mal detectados). La solución fue hacer cambios pequeños para garantizar un contrato estable en vez de complejizar el cliente.
