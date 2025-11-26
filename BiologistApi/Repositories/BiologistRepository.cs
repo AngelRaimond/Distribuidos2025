@@ -61,4 +61,27 @@ public BiologistRepository(IMongoDatabase database, IOptions<MongoDBSettings> se
             .ToListAsync(cancellationToken);
         return biologists.Select(t => t.ToModel());
     }
+
+    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(id, out _))
+            return false;
+
+        var result = await _biologistsCollection.DeleteOneAsync(t => t.Id == id, cancellationToken);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<bool> UpdateAsync(Biologist biologist, CancellationToken cancellationToken)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(biologist.Id, out _))
+            return false;
+
+        var biologistDocument = biologist.ToDocument();
+        var result = await _biologistsCollection.ReplaceOneAsync(
+            t => t.Id == biologist.Id,
+            biologistDocument,
+            cancellationToken: cancellationToken);
+
+        return result.ModifiedCount > 0;
+    }
 }
