@@ -100,4 +100,17 @@ public static class BiologistMapper
             SubArea = (ProtoSubArea)(int)model.SubArea
         };
     }
+
+    public static Biologist ToModel(this UpdateBiologistRequest request)
+    {
+        return new Biologist
+        {
+            Id = request.Id,
+            Name = request.Name,
+            Age = request.Age,
+            BirthDate = request.BirthDate != null ? request.BirthDate.ToDateTime() : DateTime.MinValue,
+            CreatedAt = DateTime.UtcNow,
+            Areas = request.Areas != null ? request.Areas.Select(a => a.ToDomain()).ToList() : new System.Collections.Generic.List<DomainArea>()
+        };
+    }
 }

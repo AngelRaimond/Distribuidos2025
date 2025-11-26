@@ -5,6 +5,7 @@ package biologistpb;
 option csharp_namespace = "BiologistApi";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 message Area {
     string area = 1;
@@ -46,8 +47,18 @@ message CreateBiologistResponse {
     repeated BiologistResponse biologists = 2;
 }
 
+message UpdateBiologistRequest {
+    string id = 1;
+    string name = 2;
+    int32 age = 3;
+    google.protobuf.Timestamp birth_date = 4;
+    repeated Area areas = 5;
+}
+
 service BiologistService {
     rpc GetBiologistById (BiologistByIdRequest) returns (BiologistResponse);
     rpc GetAllBiologistsByName (BiologistsByNameRequest) returns (stream BiologistResponse);
     rpc CreateBiologist (stream CreateBiologistRequest) returns (CreateBiologistResponse);
+    rpc DeleteBiologist (BiologistByIdRequest) returns (google.protobuf.Empty);
+    rpc UpdateBiologist (UpdateBiologistRequest) returns (google.protobuf.Empty);
 }
