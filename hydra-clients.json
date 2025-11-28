@@ -1,0 +1,9 @@
+[
+  {
+    "client_id": "musicshop",
+    "client_secret": "secret",
+    "grant_types": ["client_credentials"],
+    "scope": "read write",
+    "token_endpoint_auth_method": "client_secret_post"
+  }
+]

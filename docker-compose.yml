@@ -1,0 +1,201 @@
+
+version: '3.8'
+services:
+  hydra-db:
+    image: postgres:15
+    container_name: m-hydra-db-1
+    environment:
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: hydra
+      POSTGRES_DB: hydra
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydra -d hydra"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    ports: ["5432:5432"]
+
+  hydra-migrate:
+    image: oryd/hydra:v2.2.0
+    container_name: m-hydra-migrate-1
+    depends_on:
+      hydra-db:
+        condition: service_healthy
+    environment:
+      DSN: postgres://hydra:hydra@hydra-db:5432/hydra?sslmode=disable
+      LOG_LEVEL: info
+    command: ["migrate","sql","-e","--yes"]
+    restart: on-failure
+
+  hydra:
+    image: oryd/hydra:v2.2.0
+    container_name: m-hydra-1
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    environment:
+      DSN: postgres://hydra:hydra@hydra-db:5432/hydra?sslmode=disable
+      LOG_LEVEL: info
+      SERVE_PUBLIC_PORT: 4444
+      SERVE_ADMIN_PORT: 4445
+      URLS_SELF_ISSUER: http://hydra:4444/
+      URLS_ADMIN: http://hydra:4445/
+      URLS_LOGIN: http://hydra:3000/login
+      URLS_CONSENT: http://hydra:3000/consent
+      SECRETS_SYSTEM: this_is_not_a_secure_secret_change_me
+      OAUTH2_EXPOSE_INTERNAL_ERRORS: "true"
+      OAUTH2_ALLOWED_TOP_LEVEL_CLAIMS: "email"
+      OAUTH2_TOKEN_STRATEGIES_ACCESS_TOKEN: opaque
+    command: ["serve","all","--dev"]
+    restart: unless-stopped
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+
+  hydra-client:
+    image: oryd/hydra:v2.2.0
+    container_name: m-hydra-client-1
+    depends_on:
+      hydra:
+        condition: service_started
+    restart: "no"
+    entrypoint: []
+    volumes:
+      - ./hydra-clients.json:/clients/clients.json:ro
+      - ./scripts/hydra-client.sh:/scripts/hydra-client.sh:ro
+    command:
+      - /bin/sh
+      - -c
+      - /scripts/hydra-client.sh
+
+  hydra-token:
+    image: alpine:3.19
+    container_name: m-hydra-token-1
+    depends_on:
+      hydra-client:
+        condition: service_completed_successfully
+    restart: "no"
+    volumes:
+      - ./tmp:/tokens
+      - ./scripts/hydra-token.sh:/scripts/hydra-token.sh:ro
+    command:
+      - /bin/sh
+      - -c
+      - /scripts/hydra-token.sh
+
+  instrumentos-db:
+    image: mysql:8.0
+    container_name: m-instrumentos-db-1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: instrumentos
+      MYSQL_USER: instrumentos
+      MYSQL_PASSWORD: instrumentos
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uinstrumentos -pinstrumentos --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+    ports: ["3306:3306"]
+
+  redis:
+    image: redis:7-alpine
+    container_name: m-redis-1
+    command: ["redis-server","--appendonly","yes"]
+    restart: unless-stopped
+    ports: ["6379:6379"]
+
+  instrumentosapi:
+    build:
+      context: ./InstrumentosAPI
+      dockerfile: Dockerfile
+    image: m-instrumentosapi:dev
+    container_name: m-instrumentosapi-1
+    depends_on:
+      instrumentos-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: instrumentos-db
+      DB_PORT: 3306
+      DB_NAME: instrumentos
+      DB_USER: instrumentos
+      DB_PASSWORD: instrumentos
+      RACK_ENV: production
+      SOAP_APP_CLASS: "InstrumentoSoapService"
+    restart: unless-stopped
+    ports: ["4567:4567"]
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: m-dynamodb-local-1
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - dynamodb-data:/data
+
+  sellerapi:
+    build:
+      context: ./SellerApi
+      dockerfile: Dockerfile
+    image: m-sellerapi:dev
+    container_name: m-sellerapi-1
+    depends_on:
+      - dynamodb-local
+    environment:
+      GRPC_PORT: 50052
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+      DYNAMODB_TABLE_NAME: Sellers
+    restart: unless-stopped
+    ports:
+      - "50052:50052"
+    command: >
+      sh -c "
+        echo 'Waiting for DynamoDB to be ready...' &&
+        sleep 10 &&
+        echo 'Creating DynamoDB table...' &&
+        python scripts/init_db.py create &&
+        echo 'Starting SellerApi gRPC server...' &&
+        python main.py
+      "
+
+  musicshopapi:
+    build:
+      context: ./MusicShopApi
+      dockerfile: Dockerfile
+    image: m-musicshopapi:dev
+    container_name: m-musicshopapi-1
+    depends_on:
+      hydra:
+        condition: service_started
+      redis:
+        condition: service_started
+      instrumentosapi:
+        condition: service_started
+      sellerapi:
+        condition: service_started
+    environment:
+      HYDRA_INTROSPECTION_URL: http://hydra:4445/admin/oauth2/introspect
+      HYDRA_CLIENT_ID: musicshop
+      HYDRA_CLIENT_SECRET: secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SOAP_URL: http://instrumentosapi:4567/soap
+      SELLER_GRPC_HOST: sellerapi
+      SELLER_GRPC_PORT: 50052
+      NODE_ENV: production
+    ports:
+      - "8088:8080"
+
+volumes:
+  dynamodb-data:
+
+networks:
+  default:
+    name: m_default
