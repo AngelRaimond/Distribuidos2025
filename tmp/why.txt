@@ -1,0 +1,4 @@
+ El contenedor m-hydra-token-1 ejecuta hydra-token.sh que guarda el token OAuth2 en:
+
+token.json (respuesta completa)
+access_token (solo el token)
