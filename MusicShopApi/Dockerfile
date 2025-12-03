@@ -27,6 +27,7 @@ RUN if [ -f package-lock.json ]; then \
     fi
 
 COPY --from=build /app/dist ./dist
+COPY protos ./protos
 
 EXPOSE 8080
 CMD ["node","dist/index.js"]

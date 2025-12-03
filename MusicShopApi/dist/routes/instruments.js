@@ -59,7 +59,7 @@ router.get('/instruments', requireScope('read'), async (req, res) => {
         console.error('SOAP error on GET list:', e);
         return res.status(502).json({ error: 'bad_gateway', message: 'SOAP service error' });
     }
-}); // Explicitly handle trailing slash as 404 (doesnt work aaaa)
+}); // Explicitly handle trailing slash as 404 (some setups may not honor strict routing until rebuilt)
 router.get('/instruments/', requireScope('read'), async (_req, res) => {
     return res.status(404).json({ error: 'not_found' });
 });
@@ -99,7 +99,7 @@ router.post('/instruments', requireScope('write'), async (req, res) => {
         return res.status(400).json({ error: 'validation', details: error.details.map(d => d.message) });
     }
     try {
-        // Duplicate detection by nombre
+        // Duplicate detection by nombre (case-insensitive, trimmed)
         const existing = await soapList();
         const norm = (s) => (s || '').trim().toLowerCase();
         const dup = existing.find(i => norm(i.nombre) === norm(value.nombre));
@@ -107,7 +107,7 @@ router.post('/instruments', requireScope('write'), async (req, res) => {
             return res.status(409).json({ error: 'conflict', message: 'An instrument with this nombre already exists', id: dup.id });
         }
         const created = await soapCreate(value);
-        // bump list cache version 
+        // bump list cache version to invalidate all cached listings
         await cacheBump('list');
         const base = `${req.protocol}://${req.get('host')}`;
         res.setHeader('Location', `${base}/instruments/${created.id}`);
@@ -144,7 +144,7 @@ router.put('/instruments/:id', requireScope('write'), async (req, res) => {
         return res.status(424).json({ error: 'failed_dependency', message: 'SOAP service failed to update' });
     }
 });
-// PATCH
+// Soportar actualización parcial con PATCH
 router.patch('/instruments/:id', requireScope('write'), async (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isFinite(id) || id <= 0)

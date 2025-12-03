@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package seller;
+
+// Service definition for Seller management
+service SellerService {
+  // Client streaming: Multiple CreateSellerRequest from client -> Single CreateSellerResponse
+  rpc CreateSeller(stream CreateSellerRequest) returns (CreateSellerResponse);
+  
+  // Server streaming: Single GetSellerByNameRequest -> Multiple SellerResponse
+  rpc GetSellerByName(GetSellerByNameRequest) returns (stream SellerResponse);
+  
+  // Unary: Single request -> Single response
+  rpc GetSellerById(GetSellerByIdRequest) returns (SellerResponse);
+  
+  // Unary: Update seller
+  rpc UpdateSeller(UpdateSellerRequest) returns (SellerResponse);
+  
+  // Unary: Delete seller
+  rpc DeleteSeller(DeleteSellerRequest) returns (DeleteSellerResponse);
+}
+
+// Messages for CreateSeller (Client Streaming)
+message CreateSellerRequest {
+  string name = 1;
+  string email = 2;
+  int32 age = 3;
+  string hire_date = 4; // ISO format: YYYY-MM-DD
+  repeated Sale sales = 5;
+  string phone = 6;
+  string address = 7;
+}
+
+message Sale {
+  string instrument_name = 1;
+  double amount = 2;
+  string sale_date = 3; // ISO format: YYYY-MM-DD
+}
+
+message CreateSellerResponse {
+  int32 sellers_created = 1;
+  repeated string seller_ids = 2;
+  string message = 3;
+}
+
+// Messages for GetSellerByName (Server Streaming)
+message GetSellerByNameRequest {
+  string name = 1;
+}
+
+message SellerResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  int32 age = 4;
+  string hire_date = 5;
+  repeated Sale sales = 6;
+  string phone = 7;
+  string address = 8;
+  double total_sales = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+// Messages for GetSellerById (Unary)
+message GetSellerByIdRequest {
+  string id = 1;
+}
+
+// Messages for UpdateSeller (Unary)
+message UpdateSellerRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string email = 3;
+  optional int32 age = 4;
+  optional string hire_date = 5;
+  repeated Sale sales = 6;
+  optional string phone = 7;
+  optional string address = 8;
+}
+
+// Messages for DeleteSeller (Unary)
+message DeleteSellerRequest {
+  string id = 1;
+}
+
+message DeleteSellerResponse {
+  bool success = 1;
+  string message = 2;
+}

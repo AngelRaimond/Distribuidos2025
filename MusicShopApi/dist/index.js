@@ -9,7 +9,7 @@ app.use((req, res, next) => {
     console.log('Headers:', req.headers);
     next();
 });
-// Auth middleware
+// Auth obligatorio en todas las rutas
 app.use(authMiddleware);
 app.use(instruments);
 const port = 8080;
