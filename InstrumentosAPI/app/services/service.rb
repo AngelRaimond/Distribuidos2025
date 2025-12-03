@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 require_relative '../repositories/instrumento_repository'
 require_relative '../validators/instrumento_validator'
 require_relative '../mappers/instrumento_mapper'
@@ -71,7 +70,6 @@ class InstrumentoService
     { success: true }
   end
 end
-=======
 require 'sequel'
 
 class InstrumentoService
@@ -159,4 +157,3 @@ class InstrumentoService
     @tbl.where(id: id.to_i).delete > 0
   end
 end
->>>>>>> Stashed changes

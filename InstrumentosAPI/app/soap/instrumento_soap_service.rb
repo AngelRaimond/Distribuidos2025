@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 require 'sinatra/base'
 require 'nokogiri'
 require 'builder'
@@ -255,7 +254,6 @@ class InstrumentoSoapService < Sinatra::Base
       end
     end
   end
-=======
 require 'sinatra/base'
 require 'builder'
 require 'nokogiri'
@@ -456,5 +454,5 @@ class InstrumentoSoapService < Sinatra::Base
     content_type 'text/xml'
     fault('Server', env['sinatra.error']&.message || 'Server error')
   end
->>>>>>> Stashed changes
+
 end

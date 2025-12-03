@@ -63,7 +63,7 @@ router.get('/instruments', requireScope('read'), async (req: Request, res: Respo
     console.error('SOAP error on GET list:', e);
     return res.status(502).json({ error: 'bad_gateway', message: 'SOAP service error' });
   }
-});// Explicitly handle trailing slash as 404 (some setups may not honor strict routing until rebuilt)
+});// Explicitly handle trailing slash as 404 (doesnt work aaaa)
 router.get('/instruments/', requireScope('read'), async (_req: Request, res: Response) => {
   return res.status(404).json({ error: 'not_found' });
 });
@@ -102,7 +102,7 @@ router.post('/instruments', requireScope('write'), async (req, res) => {
     return res.status(400).json({ error: 'validation', details: error.details.map(d => d.message) });
   }
   try {
-    // Duplicate detection by nombre (case-insensitive, trimmed)
+    // Duplicate detection by nombre
     const existing = await soapList();
     const norm = (s: string) => (s || '').trim().toLowerCase();
     const dup = existing.find(i => norm(i.nombre) === norm(value.nombre));
@@ -110,7 +110,7 @@ router.post('/instruments', requireScope('write'), async (req, res) => {
       return res.status(409).json({ error: 'conflict', message: 'An instrument with this nombre already exists', id: dup.id });
     }
     const created = await soapCreate(value);
-    // bump list cache version to invalidate all cached listings
+    // bump list cache version 
     await cacheBump('list');
     const base = `${req.protocol}://${req.get('host')}`;
     res.setHeader('Location', `${base}/instruments/${created.id}`);
@@ -145,7 +145,7 @@ router.put('/instruments/:id', requireScope('write'), async (req: Request, res: 
   }
 });
 
-// Soportar actualización parcial con PATCH
+// PATCH
 router.patch('/instruments/:id', requireScope('write'), async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id) || id <= 0) return res.status(400).json({ error: 'bad_request', message: 'id must be a positive integer' });
